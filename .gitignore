@@ -1,0 +1,16 @@
+@"
+.env
+.env.local
+backend/.env
+northwind-ui/.env.local
+node_modules/
+.next/
+__pycache__/
+*.pyc
+uploads/
+chroma_db/
+backend/uploads/
+backend/chroma_db/
+northwind-ui/node_modules/
+northwind-ui/.next/
+"@ | Out-File -Encoding utf8 .gitignore
