@@ -1,69 +1,27 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 export default function LandingPage() {
   const router = useRouter();
-
   const [files, setFiles] = useState<File[]>([]);
-  const [loading, setLoading] = useState(false);
 
-  const handleFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    if (!event.target.files) return;
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
 
-    const uploadedFiles = Array.from(event.target.files);
+    const uploadedFiles = Array.from(e.target.files);
     setFiles(uploadedFiles);
   };
 
-  const handleStartReview = async () => {
+  const handleStartReview = () => {
     if (files.length === 0) {
       alert("Please upload at least one receipt.");
       return;
     }
 
-    try {
-      setLoading(true);
-
-      const formData = new FormData();
-
-      formData.append("employee_name", "Vedant Padole");
-      formData.append("department", "Engineering");
-      formData.append("grade", "L3");
-
-      files.forEach((file) => {
-        formData.append("files", file);
-      });
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/review`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Backend review failed");
-      }
-
-      const result = await response.json();
-
-      localStorage.setItem(
-        "reviewResult",
-        JSON.stringify(result)
-      );
-
-      router.push("/review");
-    } catch (error) {
-      console.error(error);
-      alert("Something went wrong while reviewing receipts.");
-    } finally {
-      setLoading(false);
-    }
+    router.push("/review");
   };
 
   return (
@@ -97,8 +55,8 @@ export default function LandingPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center text-white font-bold shadow-md text-xl">
-              $
+            <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-bold shadow-md">
+              AI
             </div>
           </motion.div>
 
@@ -109,11 +67,9 @@ export default function LandingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              AI Expense
+              Review Expenses.
               <br />
-              <span className="text-green-700 italic">
-                Policy Review
-              </span>
+              <span className="text-green-700 italic">With Policy AI.</span>
             </motion.h1>
 
             <motion.p
@@ -122,42 +78,9 @@ export default function LandingPage() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              Upload receipts and let AI review employee
-              expense submissions against company policy.
+              Upload receipt PDFs or images and get AI-powered policy checks,
+              risk flags, citations, and reviewer-ready decisions.
             </motion.p>
-
-            <div className="mt-8">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Upload Receipts
-              </label>
-
-              <input
-                type="file"
-                multiple
-                accept=".pdf,image/*"
-                onChange={handleFileChange}
-                className="w-full border border-gray-300 rounded-2xl p-3 bg-white"
-              />
-
-              {files.length > 0 && (
-                <div className="mt-4 text-left">
-                  <p className="text-sm font-semibold text-gray-700">
-                    Uploaded Files:
-                  </p>
-
-                  <ul className="mt-2 space-y-2">
-                    {files.map((file, index) => (
-                      <li
-                        key={index}
-                        className="text-xs bg-green-50 p-2 rounded-xl border border-green-100"
-                      >
-                        {file.name}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
 
             <div className="mt-10 flex justify-center gap-3 opacity-70">
               <motion.div
@@ -165,19 +88,52 @@ export default function LandingPage() {
                 transition={{ duration: 5, repeat: Infinity }}
                 className="w-16 h-16 bg-green-200 rounded-full blur-[2px]"
               />
-
               <motion.div
                 animate={{ y: [0, -12, 0] }}
                 transition={{ duration: 6, repeat: Infinity }}
                 className="w-20 h-20 bg-green-300 rounded-full blur-[1px]"
               />
-
               <motion.div
                 animate={{ y: [0, -6, 0] }}
                 transition={{ duration: 5.5, repeat: Infinity }}
                 className="w-16 h-16 bg-green-100 rounded-full blur-[2px]"
               />
             </div>
+
+            <motion.div
+              className="mt-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.65 }}
+            >
+              <label className="block border-2 border-dashed border-green-300 rounded-2xl p-5 bg-white/50 cursor-pointer hover:bg-white/70 transition">
+                <input
+                  type="file"
+                  multiple
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+
+                <p className="text-green-900 font-semibold">
+                  Upload receipts
+                </p>
+
+                <p className="text-xs text-gray-500 mt-1">
+                  PDF, JPG, JPEG, PNG supported
+                </p>
+              </label>
+
+              {files.length > 0 && (
+                <div className="mt-3 text-left bg-white/60 rounded-xl p-3 max-h-24 overflow-y-auto">
+                  {files.map((file, index) => (
+                    <p key={index} className="text-xs text-gray-700 truncate">
+                      {index + 1}. {file.name}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </motion.div>
           </div>
 
           <motion.div
@@ -190,14 +146,13 @@ export default function LandingPage() {
               whileTap={{ scale: 0.96 }}
               whileHover={{ scale: 1.01 }}
               onClick={handleStartReview}
-              disabled={loading}
               className="w-full bg-green-700 text-white py-4 rounded-2xl text-lg font-semibold shadow-md hover:bg-green-800 transition"
             >
-              {loading ? "Reviewing..." : "Start AI Review"}
+              Start AI Review
             </motion.button>
 
             <p className="text-center text-xs text-gray-500 mt-3">
-              Groq + LangGraph + ChromaDB powered
+              PDF + image receipts · Policy-grounded review
             </p>
           </motion.div>
         </motion.div>
